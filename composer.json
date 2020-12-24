@@ -1,0 +1,51 @@
+{
+  "name": "mathieu-bour/hydra",
+  "description": "Hydra provides a simple and clean way to test Laravel and Lumen packages against multiple version.",
+  "minimum-stability": "stable",
+  "version": "0.1.0",
+  "keywords": [
+    "laravel",
+    "lumen",
+    "testing",
+    "testbench"
+  ],
+  "homepage": "https://github.com/mathieu-bour/hydra",
+  "readme": "https://github.com/mathieu-bour/hydra/blob/main/README.md",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mathieu Bour",
+      "email": "mathieu.tin.bour@gmail.com"
+    }
+  ],
+  "support": {
+    "email": "mathieu.tin.bour@gmail.com",
+    "issues": "https://github.com/mathieu-bour/hydra/issues",
+    "source": "https://github.com/mathieu-bour/hydra"
+  },
+  "autoload": {
+    "psr-4": {
+      "Windy\\Hydra\\": "src"
+    }
+  },
+  "require": {
+    "php": "^7.2 || ^8.0",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "symfony/console": "^5.2",
+    "symfony/yaml": "^5.2",
+    "symfony/process": "^5.2",
+    "phpunit/phpunit": "^8.0 || ^9.0"
+  },
+  "require-dev": {
+    "laravel/framework": "^8.20",
+    "laravel/lumen-framework": "^8.2",
+    "symfony/var-dumper": "^5.2"
+  },
+  "bin": [
+    "bin/hydra"
+  ],
+  "config": {
+    "sort-packages": true
+  }
+}

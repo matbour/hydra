@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+// Locate composer autoload file
+$maxDepth = 5;
+
+$path     = dirname(__DIR__);
+$autoload = '/vendor/autoload.php';
+
+while (!file_exists("{$path}{$autoload}") && $maxDepth > 0) {
+    $path = dirname($path);
+    $maxDepth--;
+    echo $path . "\n";
+}
+
+if (!file_exists("{$path}{$autoload}")) {
+    throw new RuntimeException('Unable to locate composer autoload.php file');
+}
+
+require "{$path}{$autoload}"; // Require composer
+
+use Symfony\Component\Console\Application;
+use Windy\Hydra\Commands\InstallCommand;
+
+$application = new Application();
+$application->add(new InstallCommand());
+$application->run();
