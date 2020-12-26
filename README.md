@@ -27,7 +27,7 @@ The recognized file names are the following:
 - .hydra.json
 - .hydra.php
 
-### `sandbox` (defaults to ./hydra)
+### `sandbox` (defaults to `./hydra`)
 The hydra base directory, where the benches will be installed.
 
 ### `benches`
@@ -43,6 +43,13 @@ benches:
 
 will create a bench `laravel-7` using the `laravel/laravel` framework and the SemVer constraint `^7.0`.
 
+### `composer` (defaults to `composer`)
+Since Hydra relies on the composer executable, you may want to override the composer executable.
+
+For example:
+```yaml
+composer: /user/bin/composer.phar
+```
 
 ## Usage
 
