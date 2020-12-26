@@ -7,6 +7,8 @@ namespace Windy\Hydra\Core;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 use Windy\Hydra\Utils\FileUtils;
+use function array_diff_key;
+use function array_fill_keys;
 use function array_merge;
 use function array_replace_recursive;
 use function count;
@@ -23,12 +25,19 @@ use const JSON_UNESCAPED_SLASHES;
 
 class Installer
 {
-    public const STARTING = 'starting';
-    public const CREATING = 'creating project';
-    public const PATCHING = 'patching project';
-    public const UPDATING = 'updating dependencies';
-    public const READY    = 'ready';
-    public const SPINNER  = ['-', '\\', '|', '/'];
+    public const  STARTING           = 'starting';
+    public const  CREATING           = 'creating project';
+    public const  PATCHING           = 'patching project';
+    public const  UPDATING           = 'updating dependencies';
+    public const  READY              = 'ready';
+    public const  SPINNER            = ['-', '\\', '|', '/'];
+    private const PACKAGES_BLACKLIST = [
+        'php',
+        'laravel/laravel',
+        'laravel/framework',
+        'laravel/lumen',
+        'laravel/lumen-framework',
+    ];
 
     private $bench;
     private $state = self::STARTING;
@@ -42,7 +51,7 @@ class Installer
         $this->create = new Process([
             Config::get('composer', 'composer'),
             'create-project',
-            "laravel/{$this->bench->getFramework()}",
+            "laravel/{$this->bench->getFramework()}:{$this->bench->getConstraint()}",
             $this->bench->getDestination(),
         ]);
         $this->update = new Process([
@@ -66,7 +75,9 @@ class Installer
                 break;
             case self::CREATING:
                 if (!$this->create->isStarted()) {
-                    $this->create->start();
+                    $this->create->start(static function ($type, $data): void {
+                        echo $data;
+                    });
                 }
                 if (!$this->create->isRunning()) {
                     $this->state = self::PATCHING;
@@ -119,6 +130,8 @@ class Installer
 
         $packageComposerData = json_decode(file_get_contents($packageComposerFile), true);
 
+        $blacklist = array_fill_keys(self::PACKAGES_BLACKLIST, '*');
+
         $merge = [
             'repositories' => [
                 [
@@ -128,8 +141,8 @@ class Installer
             ],
             'require'      => array_merge([
                 $packageComposerData['name'] => $packageComposerData['version'],
-            ], $packageComposerData['require']),
-            'require-dev'  => $packageComposerData['require-dev'],
+            ], array_diff_key($packageComposerData['require'], $blacklist)),
+            'require-dev'  => array_diff_key($packageComposerData['require-dev'], $blacklist),
         ];
 
         $out = array_replace_recursive($benchComposerData, $merge);
