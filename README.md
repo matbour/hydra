@@ -1,15 +1,22 @@
 # Hydra
-
 Simple and clean testing for Laravel and Lumen packages.
+Supports Laravel/Lumen 5.8.x, 7.x and 8.x.
+
+## Stability disclaimer
+This package is still un early development stage, and there are many bugs and planned features.
+Use it at your own risk.
+
 
 ## Requirements
-- php 7.2+
+- php 7.1.3+
 - composer command in your path
 
-## Configuration
+## Acknowledgements
+This package what greatly inspired by the [orchestra/testbench](https://github.com/orchestral/testbench) package.
 
+## Configuration
 Hydra configuration must be written at the base of your project.
-The recognized file names are the follwing:
+The recognized file names are the following:
 
 - hydra.yaml
 - hydra.yml
@@ -20,7 +27,7 @@ The recognized file names are the follwing:
 - .hydra.json
 - .hydra.php
 
-### `directory` (defaults to ./hydra)
+### `sandbox` (defaults to ./hydra)
 The hydra base directory, where the benches will be installed.
 
 ### `benches`
@@ -36,10 +43,10 @@ benches:
 
 will create a bench `laravel-7` using the `laravel/laravel` framework and the SemVer constraint `^7.0`.
 
+
 ## Usage
 
 ### Installing benches
-
 To install the benches defined in the configuration file, run:
 
 ```shell
@@ -70,4 +77,38 @@ You can run phpunit like this:
 
 ```shell
 HYDRA_BENCH=laravel-7 phpunit [args]
+```
+
+#### Use the `HydraTestCase`
+In order to set up tests for your package, you have to use the `Windy\Hydra\Testing\HydraTestCase` class.
+
+##### Define a configuration:
+
+```php
+use Windy\Hydra\Testing\HydraTestCase;
+
+class ExampleTest extends HydraTestCase {
+    protected function setUpConfig(): array
+    {
+        return [
+            'your-package' => [
+                'foo' => 'bar'
+            ]
+        ];
+    }
+}
+```
+
+##### Define your providers
+```php
+use Windy\Hydra\Testing\HydraTestCase;
+
+class ExampleTest extends HydraTestCase {
+    protected function setUpProviders(): array
+    {
+        return [
+            \Me\MyPackage\MyPackageProvider::class
+        ];
+    }
+}
 ```

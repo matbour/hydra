@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Windy\Hydra\Testing;
 
 use Illuminate\Contracts\Console\Kernel;
@@ -8,6 +10,9 @@ use Illuminate\Support\Facades\Facade;
 use Laravel\Lumen\Application as LumenApplication;
 use PHPUnit\Framework\TestCase;
 use Windy\Hydra\Core\Bench;
+use function getenv;
+use function strpos;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * Base test class for Laravel and Lumen applications.
@@ -28,11 +33,15 @@ class HydraTestCase extends TestCase
         parent::setUp();
     }
 
+    /**
+     * @return LaravelApplication|LumenApplication The application.
+     */
     public function createApplication()
     {
         $bench = Bench::fromName(getenv('HYDRA_BENCH'));
         $file  = $bench->getDestination() . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'app.php';
-        $app   = require $file;
+        /** @noinspection PhpIncludeInspection */
+        $app = require $file;
 
         if (strpos($app->version(), 'Lumen') === false) {
             // Laravel
@@ -50,27 +59,49 @@ class HydraTestCase extends TestCase
         return $app;
     }
 
-    public function refreshApplication()
+    public function refreshApplication(): void
     {
         $this->app = $this->createApplication();
     }
 
-    public function isLaravel()
+    /**
+     * @param LaravelApplication|LumenApplication|null $app The application to test. If null, use the
+     *                                                      {@see HydraTestCase::$app} instead.
+     *
+     * @return bool If the application is a {@see LaravelApplication} instance.
+     */
+    protected function isLaravel($app = null): bool
     {
-        return !$this->isLumen();
+        return !$this->isLumen($app);
     }
 
-    public function isLumen()
+    /**
+     * Check if the application is a Lumen instance.
+     *
+     * @param LaravelApplication|LumenApplication|null $app The application to test. If null, use the
+     *                                                      {@see HydraTestCase::$app} instead.
+     *
+     * @return bool If the application is a {@see LumenApplication} instance.
+     */
+    protected function isLumen($app = null): bool
     {
-        return strpos($this->app->version(), 'Lumen') !== false;
+        $version = $app ? $app->version() : $this->app->version();
+
+        return strpos($version, 'Lumen') !== false;
     }
 
-    protected function setUpConfig()
+    /**
+     * @return mixed[] Your package configuration for the test.
+     */
+    protected function setUpConfig(): array
     {
         return [];
     }
 
-    protected function setUpProviders()
+    /**
+     * @return string[] Your package provider classes.
+     */
+    protected function setUpProviders(): array
     {
         return [];
     }
