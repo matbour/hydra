@@ -52,20 +52,20 @@ class HydraTestCase extends TestCase
 
         $this->app = $this->createApplication();
 
-        foreach ($this->setUpConfig() as $root => $value) {
-            $this->app['config']->set($root, $value);
-        }
-
-        foreach ($this->setUpProviders() as $provider) {
-            $this->app->register($provider);
-        }
-
         if ($this->isLaravel()) {
             $this->setUpLaravel();
             $this->app->make(Kernel::class)->bootstrap();
         } elseif ($this->isLumen()) {
             $this->setUpLumen();
             $this->app->boot();
+        }
+
+        foreach ($this->setUpConfig() as $root => $value) {
+            $this->app['config']->set($root, $value);
+        }
+
+        foreach ($this->setUpProviders() as $provider) {
+            $this->app->register($provider);
         }
     }
 
