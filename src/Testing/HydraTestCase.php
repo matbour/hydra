@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Windy\Hydra\Testing;
 
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Contracts\Foundation\Application as LaravelApplication;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Foundation\Application as Laravel;
 use Illuminate\Support\Facades\Facade;
-use Laravel\Lumen\Application as LumenApplication;
+use Laravel\Lumen\Application as Lumen;
 use PHPUnit\Framework\TestCase;
 use Windy\Hydra\Core\Bench;
 use function getenv;
@@ -20,9 +21,14 @@ use const DIRECTORY_SEPARATOR;
  */
 class HydraTestCase extends TestCase
 {
-    /** @var LaravelApplication|LumenApplication */
+    /** @var Laravel|Lumen */
     protected $app;
 
+    /**
+     * Run the PHPUnit setup.
+     *
+     * @throws BindingResolutionException
+     */
     public function setUp(): void
     {
         Facade::clearResolvedInstances();
@@ -35,16 +41,10 @@ class HydraTestCase extends TestCase
     }
 
     /**
-     * @return LaravelApplication|LumenApplication The application.
+     * Bootstrap the Laravel/Lumen application.
+     *
+     * @throws BindingResolutionException
      */
-    public function createApplication()
-    {
-        $bench = Bench::fromName(getenv('HYDRA_BENCH'));
-        $file  = $bench->getDestination() . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'app.php';
-        /** @noinspection PhpIncludeInspection */
-        return require $file;
-    }
-
     public function refreshApplication(): void
     {
         putenv('APP_ENV=testing');
@@ -70,10 +70,21 @@ class HydraTestCase extends TestCase
     }
 
     /**
-     * @param LaravelApplication|LumenApplication|null $app The application to test. If null, use the
+     * @return Laravel|Lumen The application.
+     */
+    public function createApplication()
+    {
+        $bench = Bench::fromName(getenv('HYDRA_BENCH'));
+        $file  = $bench->getDestination() . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'app.php';
+        /** @noinspection PhpIncludeInspection */
+        return require $file;
+    }
+
+    /**
+     * @param Laravel|Lumen|null $app                       The application to test. If null, use the
      *                                                      {@see HydraTestCase::$app} instead.
      *
-     * @return bool If the application is a {@see LaravelApplication} instance.
+     * @return bool If the application is a {@see Laravel} instance.
      */
     protected function isLaravel($app = null): bool
     {
@@ -83,32 +94,16 @@ class HydraTestCase extends TestCase
     /**
      * Check if the application is a Lumen instance.
      *
-     * @param LaravelApplication|LumenApplication|null $app The application to test. If null, use the
+     * @param Laravel|Lumen|null $app                       The application to test. If null, use the
      *                                                      {@see HydraTestCase::$app} instead.
      *
-     * @return bool If the application is a {@see LumenApplication} instance.
+     * @return bool If the application is a {@see Lumen} instance.
      */
     protected function isLumen($app = null): bool
     {
         $version = $app ? $app->version() : $this->app->version();
 
         return strpos($version, 'Lumen') !== false;
-    }
-
-    /**
-     * @return mixed[] Your package configuration for the test.
-     */
-    protected function setUpConfig(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return string[] Your package provider classes.
-     */
-    protected function setUpProviders(): array
-    {
-        return [];
     }
 
     /**
@@ -125,5 +120,21 @@ class HydraTestCase extends TestCase
     protected function setUpLumen(): void
     {
         // Run only for Lumen applications
+    }
+
+    /**
+     * @return mixed[] Your package configuration for the test.
+     */
+    protected function setUpConfig(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return string[] Your package provider classes.
+     */
+    protected function setUpProviders(): array
+    {
+        return [];
     }
 }

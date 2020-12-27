@@ -42,7 +42,9 @@ class InstallCommand extends Command
         // Retrieve benches
         $benches = [];
 
-        if (!$input->getOption('only')) {
+        if ($input->getOption('only')) {
+            $benches[] = Bench::fromName($input->getOption('only'));
+        } else {
             foreach (Config::get('benches') as $name => $bench) {
                 if ($name === 'default') {
                     continue;
@@ -50,8 +52,6 @@ class InstallCommand extends Command
 
                 $benches[$name] = new Bench($name, $bench['framework'], $bench['constraint']);
             }
-        } else {
-            $benches[] = Bench::fromName($input->getOption('only'));
         }
 
         // Install all the benches

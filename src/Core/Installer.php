@@ -15,6 +15,7 @@ use function count;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
+use function fwrite;
 use function is_dir;
 use function json_decode;
 use function json_encode;
@@ -22,6 +23,8 @@ use function mkdir;
 use function sprintf;
 use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_SLASHES;
+use const STDERR;
+use const STDOUT;
 
 class Installer
 {
@@ -37,23 +40,28 @@ class Installer
         'laravel/framework',
         'laravel/lumen',
         'laravel/lumen-framework',
+        'phpunit/phpunit',
     ];
 
     private $bench;
+    private $verbose;
     private $state = self::STARTING;
     private $create;
     private $update;
     private $spinnerTicks = 0;
 
-    public function __construct(Bench $bench)
+    public function __construct(Bench $bench, bool $verbose)
     {
-        $this->bench  = $bench;
+        $this->bench   = $bench;
+        $this->verbose = $verbose;
+
         $this->create = new Process([
             Config::get('composer', 'composer'),
             'create-project',
             "laravel/{$this->bench->getFramework()}:{$this->bench->getConstraint()}",
             $this->bench->getDestination(),
         ]);
+
         $this->update = new Process([
             Config::get('composer', 'composer'),
             'update',
@@ -75,9 +83,7 @@ class Installer
                 break;
             case self::CREATING:
                 if (!$this->create->isStarted()) {
-                    $this->create->start(static function ($type, $data): void {
-                        echo $data;
-                    });
+                    $this->create->start([$this, 'write']);
                 }
                 if (!$this->create->isRunning()) {
                     $this->state = self::PATCHING;
@@ -89,7 +95,7 @@ class Installer
                 break;
             case self::UPDATING:
                 if (!$this->update->isStarted()) {
-                    $this->update->start();
+                    $this->update->start([$this, 'write']);
                 }
                 if (!$this->update->isRunning()) {
                     $this->state = self::READY;
@@ -100,6 +106,9 @@ class Installer
         return $this->__toString();
     }
 
+    /**
+     * Setup the bench.
+     */
     private function setup(): void
     {
         if (is_dir($this->bench->getDestination())) {
@@ -115,6 +124,9 @@ class Installer
         }
     }
 
+    /**
+     * Patch the bench.
+     */
     private function patch(): void
     {
         $benchComposerFile   = FileUtils::join($this->bench->getDestination(), 'composer.json');
@@ -153,11 +165,37 @@ class Installer
         );
     }
 
+    /**
+     * Get the installer status as a string.
+     *
+     * @return string The installer status.
+     */
     public function __toString(): string
     {
         $spinner            = self::SPINNER[$this->spinnerTicks];
         $this->spinnerTicks = ($this->spinnerTicks + 1) % count(self::SPINNER);
 
         return sprintf('%s %s %s', $spinner, $this->bench->getName(), $this->state);
+    }
+
+    /**
+     * Write to standard outputs.
+     *
+     * @param string $type The output type ({@see Process::ERR} and {@see Process::OUT})
+     * @param string $data The output data.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
+     */
+    private function write(string $type, string $data): void
+    {
+        if (!$this->verbose) {
+            return;
+        }
+
+        if ($type === Process::ERR) {
+            fwrite(STDERR, $data);
+        } else {
+            fwrite(STDOUT, $data);
+        }
     }
 }

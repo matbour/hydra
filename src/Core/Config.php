@@ -17,7 +17,6 @@ class Config
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     private $data = [];
-
     /**
      * @var Config $instance The current loaded instance.
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint

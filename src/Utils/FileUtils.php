@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Windy\Hydra\Utils;
 
-use InvalidArgumentException;
 use LogicException;
 use function array_map;
-use function ctype_print;
 use function implode;
 use function is_dir;
 use function is_link;
@@ -22,37 +20,15 @@ use const DIRECTORY_SEPARATOR;
 class FileUtils
 {
     /**
-     * Check if a path is absolute
+     * @param string ...$parts The path parts to join.
      *
-     * @see https://stackoverflow.com/a/38022806 (original source)
-     *
-     * @param string $path The path to check.
-     *
-     * @return bool If the path is absolute
+     * @return string The joined path.
      */
-    public static function isAbsolute(string $path): bool
+    public static function join(string ...$parts): string
     {
-        if (!ctype_print($path)) {
-            throw new InvalidArgumentException(
-                "Path can NOT have non-printable characters or be empty"
-            );
-        }
-        // Optional wrapper(s).
-        $regExp = '%^(?<wrappers>(?:[[:print:]]{2,}://)*)';
-
-        // Optional root prefix.
-        $regExp .= '(?<root>(?:[[:alpha:]]:/|/)?)';
-
-        // Actual path.
-        $regExp .= '(?<path>(?:[[:print:]]*))$%';
-
-        $parts = [];
-
-        if (!preg_match($regExp, $path, $parts)) {
-            throw new InvalidArgumentException("Path is NOT valid, was given $path");
-        }
-
-        return $parts['root'] !== '';
+        return implode(DIRECTORY_SEPARATOR, array_map(static function (string $part) {
+            return self::normalize($part);
+        }, $parts));
     }
 
     /**
@@ -87,18 +63,6 @@ class FileUtils
         }
 
         return rtrim($normalized, $separator);
-    }
-
-    /**
-     * @param string ...$parts The path parts to join.
-     *
-     * @return string The joined path.
-     */
-    public static function join(string ...$parts): string
-    {
-        return implode(DIRECTORY_SEPARATOR, array_map(static function (string $part) {
-            return self::normalize($part);
-        }, $parts));
     }
 
     /**
