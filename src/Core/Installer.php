@@ -83,7 +83,9 @@ class Installer
                 break;
             case self::CREATING:
                 if (!$this->create->isStarted()) {
-                    $this->create->start([$this, 'write']);
+                    $this->create->start(function (string $type, string $data): void {
+                        $this->write($type, $data);
+                    });
                 }
                 if (!$this->create->isRunning()) {
                     $this->state = self::PATCHING;
@@ -95,7 +97,9 @@ class Installer
                 break;
             case self::UPDATING:
                 if (!$this->update->isStarted()) {
-                    $this->update->start([$this, 'write']);
+                    $this->update->start(function (string $type, string $data): void {
+                        $this->write($type, $data);
+                    });
                 }
                 if (!$this->update->isRunning()) {
                     $this->state = self::READY;
