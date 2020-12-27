@@ -41,27 +41,25 @@ class HydraTestCase extends TestCase
         $bench = Bench::fromName(getenv('HYDRA_BENCH'));
         $file  = $bench->getDestination() . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'app.php';
         /** @noinspection PhpIncludeInspection */
-        $app = require $file;
-
-        if (strpos($app->version(), 'Lumen') === false) {
-            // Laravel
-            $app->make(Kernel::class)->bootstrap();
-        }
-
-        foreach ($this->setUpConfig() as $root => $value) {
-            $app['config']->set($root, $value);
-        }
-
-        foreach ($this->setUpProviders() as $provider) {
-            $app->register($provider);
-        }
-
-        return $app;
+        return require $file;
     }
 
     public function refreshApplication(): void
     {
         $this->app = $this->createApplication();
+
+        if (strpos($this->app->version(), 'Lumen') === false) {
+            // Laravel
+            $this->app->make(Kernel::class)->bootstrap();
+        }
+
+        foreach ($this->setUpConfig() as $root => $value) {
+            $this->app['config']->set($root, $value);
+        }
+
+        foreach ($this->setUpProviders() as $provider) {
+            $this->app->register($provider);
+        }
     }
 
     /**
