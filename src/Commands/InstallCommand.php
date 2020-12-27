@@ -75,7 +75,9 @@ class InstallCommand extends Command
                 }
             }
 
-            $sections->overwrite(implode("\n", $output));
+            if (!$input->getOption('verbose')) {
+                $sections->overwrite(implode("\n", $output));
+            }
             usleep(250 * 1000);
         } while ($continue);
 
