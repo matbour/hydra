@@ -2,7 +2,7 @@
   "name": "mathieu-bour/hydra",
   "description": "Hydra provides a simple and clean way to test Laravel and Lumen packages against multiple versions.",
   "minimum-stability": "stable",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "keywords": [
     "laravel",
     "lumen",

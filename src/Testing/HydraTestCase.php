@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Windy\Hydra\Testing;
 
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Foundation\Application as LaravelApplication;
 use Illuminate\Support\Facades\Facade;
 use Laravel\Lumen\Application as LumenApplication;
@@ -61,13 +62,10 @@ class HydraTestCase extends TestCase
 
         if ($this->isLaravel()) {
             $this->setUpLaravel();
+            $this->app->make(Kernel::class)->bootstrap();
         } elseif ($this->isLumen()) {
             $this->setUpLumen();
             $this->app->boot();
-        }
-
-        if (strpos($this->app->version(), 'Lumen') !== false) {
-            return;
         }
     }
 
