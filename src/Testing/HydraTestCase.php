@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Windy\Hydra\Testing;
 
-use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Foundation\Application as LaravelApplication;
 use Illuminate\Support\Facades\Facade;
 use Laravel\Lumen\Application as LumenApplication;
 use PHPUnit\Framework\TestCase;
 use Windy\Hydra\Core\Bench;
 use function getenv;
+use function putenv;
 use function strpos;
 use const DIRECTORY_SEPARATOR;
 
@@ -46,12 +46,10 @@ class HydraTestCase extends TestCase
 
     public function refreshApplication(): void
     {
-        $this->app = $this->createApplication();
+        putenv('APP_ENV=testing');
+        Facade::clearResolvedInstances();
 
-        if (strpos($this->app->version(), 'Lumen') === false) {
-            // Laravel
-            $this->app->make(Kernel::class)->bootstrap();
-        }
+        $this->app = $this->createApplication();
 
         foreach ($this->setUpConfig() as $root => $value) {
             $this->app['config']->set($root, $value);
@@ -59,6 +57,17 @@ class HydraTestCase extends TestCase
 
         foreach ($this->setUpProviders() as $provider) {
             $this->app->register($provider);
+        }
+
+        if ($this->isLaravel()) {
+            $this->setUpLaravel();
+        } elseif ($this->isLumen()) {
+            $this->setUpLumen();
+            $this->app->boot();
+        }
+
+        if (strpos($this->app->version(), 'Lumen') !== false) {
+            return;
         }
     }
 
@@ -102,5 +111,21 @@ class HydraTestCase extends TestCase
     protected function setUpProviders(): array
     {
         return [];
+    }
+
+    /**
+     * Set up Laravel application.
+     */
+    protected function setUpLaravel(): void
+    {
+        // Run only for Laravel applications
+    }
+
+    /**
+     * Setup the Lumen application.
+     */
+    protected function setUpLumen(): void
+    {
+        // Run only for Lumen applications
     }
 }
