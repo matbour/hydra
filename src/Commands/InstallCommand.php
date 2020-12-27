@@ -55,8 +55,8 @@ class InstallCommand extends Command
         }
 
         // Install all the benches
-        $installers = array_map(static function ($bench) {
-            return new Installer($bench);
+        $installers = array_map(static function ($bench) use ($input) {
+            return new Installer($bench, $input->getOption('verbose'));
         }, $benches);
 
         $sections = $output->section();
