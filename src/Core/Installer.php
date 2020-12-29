@@ -40,7 +40,6 @@ class Installer
         'laravel/framework',
         'laravel/lumen',
         'laravel/lumen-framework',
-        'phpunit/phpunit',
     ];
 
     private $bench;
